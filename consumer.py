@@ -9,7 +9,7 @@ import datetime
 try:
    client = MongoClient('localhost',27017)
    db = client["test"]
-   col = db["motiondetection"]
+   col = db["pulse_rate"]
    print("Connected successfully to MongoDB")
 except Exception as e:  
    print(f'Could not connect to MongoDB...\n error: {e}')
@@ -29,17 +29,16 @@ consumer = KafkaConsumer(topicName, group_id ='group0', bootstrap_servers =
 print('Waiting for input from Producer...')
 # Read and print message from consumer
 for msg in consumer:
-    print(f'Topic Name={msg.topic}, Message={msg.value}')
+    print(f'Topic Name={msg.topic}, Pulse rate={msg.value}')
     message_json = msg.value.decode('utf-8')
     s = json.dumps(message_json, indent=4, sort_keys=True)
-    print(s)
     record = json.loads(s)
-    print(f'json: {record}')
-    motionValue = record
+    print(f'Document value: {record}')
+    pulseRate = record
 
     try:
-      motion_rec = {'date': datetime.datetime.now(), 'motion': motionValue}
-      motion_rec_id = col.insert_one(motion_rec)
+      pulse_rec = {'date': datetime.datetime.now(), 'pulseRate': pulseRate}
+      pulse_rec_id = col.insert_one(pulse_rec)
     except Exception as e:
         print(f'Could not insert records into MongoDB...\n error: {e}')
 

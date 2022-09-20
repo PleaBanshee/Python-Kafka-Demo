@@ -20,8 +20,3 @@ while True:
     producer.send(topicName,arduinoReads)
     print("Reading...")
     producer.flush()
-
-# Print message
-# print(arduinoReads)
-# print("Message Sent")
-# ser.close()
