@@ -3,14 +3,21 @@ from kafka import KafkaConsumer
 from pymongo import MongoClient
 import json
 # Import sys module
+import os
 import sys
-import datetime
+from datetime import datetime
+import requests
+from dotenv import load_dotenv
+import bson.json_util as json_util
+
+load_dotenv()
 
 try:
    client = MongoClient('localhost',27017)
    db = client["test"]
    col = db["pulse_rate"]
    print("Connected successfully to MongoDB")
+   powerBI = os.getenv('POWERBI_API')
 except Exception as e:  
    print(f'Could not connect to MongoDB...\n error: {e}')
 
@@ -37,8 +44,14 @@ for msg in consumer:
     pulseRate = record
 
     try:
-      pulse_rec = {'date': datetime.datetime.now(), 'pulseRate': pulseRate}
+      now = datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S%Z")
+      pulse_rec = {'date': now, 'pulseRate': pulseRate}
       pulse_rec_id = col.insert_one(pulse_rec)
+      try:
+         response = requests.post(powerBI,data=json_util.dumps([pulse_rec]))
+         print(f'API response code: {response.status_code}')
+      except Exception as ex:
+         print(f'Could not send data to PowerBI Dashboards...\n error: {ex}')
     except Exception as e:
         print(f'Could not insert records into MongoDB...\n error: {e}')
 
