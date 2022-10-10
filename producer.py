@@ -1,4 +1,5 @@
 # Import KafkaProducer from Kafka library
+import sys
 import serial
 from kafka import KafkaProducer
 
@@ -16,7 +17,12 @@ producer = KafkaProducer(bootstrap_servers = bootstrap_servers)
 print('Starting to read input from Arduino Uno R3...')
 # Publish text in defined topic
 while True:
-    arduinoReads = ser.readline()
-    producer.send(topicName,arduinoReads)
-    print("Reading...")
-    producer.flush()
+    try:
+        arduinoReads = ser.readline()
+        producer.send(topicName,arduinoReads)
+        print("Reading...")
+        producer.flush()
+    except KeyboardInterrupt:
+        # Terminate the script
+        print('Exiting Producer...')
+        sys.exit()
