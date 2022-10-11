@@ -30,10 +30,23 @@ except Exception as e:
 # Define server with port
 bootstrap_servers = ['localhost:9092']
 # Define topic name from where the message will recieve
-topicName = 'test-script1'
+topicName = 'script-topic'
 # Initialize consumer variable
 consumer = KafkaConsumer(topicName, group_id ='group0', bootstrap_servers =
    bootstrap_servers,auto_offset_reset='earliest')
+
+def calcLargestFactor(x):
+    factors = []
+    i = 2
+    while i < x:
+        while x % i == 0:
+            x /= i
+            factors += [i]
+        i += 1
+    return factors
+    
+def get_large(x):
+    return calcLargestFactor(x)[-1]
 
 def calcThresholds(date,pulse):
     sum_total = 0
@@ -48,18 +61,17 @@ def calcThresholds(date,pulse):
         sum_total += num
     avg = sum_total//len(pulse)
     threshold_list = []
-    if avg > 200:
+    if avg >= 200:
         for item in threshold_check["Pulse_Val"]:
-            if item > 200:
+            if item >= 200 and counter == 0:
                 threshold_start = counter
-                break
-            if item > 200:
+                threshold_list.append(threshold_check['Date'])
+                counter += 1
+                continue
+            if item >= 200:
                 threshold_list.append(threshold_check['Date'])
             counter += 1
-      #   print(f"Threshold Exceeded from time {threshold_check['Date'][threshold_start]} to {threshold_check['Date'][9]}")
         return threshold_check['Date'][threshold_start],threshold_check['Date'][len(threshold_list)-1]
-
-
 
 print('Waiting for input from Producer...')
 # Read and print message from consumer
@@ -90,7 +102,14 @@ for msg in consumer:
          print(f'Could not insert records into MongoDB...\n error: {e}')
    except KeyboardInterrupt:
       # Terminate the script
-      threshold_val = calcThresholds(pulse_date, pulse_val)
-      print(f"Threshold Exceeded from time: {threshold_val}")
+      print('Calculating threshold timestamps...')
+      time.sleep(5)
+      largestFactor = get_large(len(pulse_val))
+      chunkz = [pulse_date[i:i + len(pulse_date)//largestFactor] for i in range(0, len(pulse_date), len(pulse_date)//largestFactor)]
+      chunkz2 = [pulse_val[i:i + len(pulse_val)//largestFactor] for i in range(0, len(pulse_val), len(pulse_val)//largestFactor)]
+      for i in range(0,len(chunkz)):
+         time1 = calcThresholds(chunkz[i],chunkz2[i])[0]
+         time2 = calcThresholds(chunkz[i],chunkz2[i])[1]
+         print(f"Thresholds occured from {time1} to {time2}")
       print('Exiting Consumer...')
       sys.exit()
