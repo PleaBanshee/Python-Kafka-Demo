@@ -2,8 +2,12 @@
 #define rise_threshold 5
 // Pulse Monitor Test Script
 int sensorPin = 0;
+int led = 13; // the pin that the LED is atteched to
+int state = LOW; // default state of LED
 void setup() {
-   Serial.begin(9600);
+   pinMode(led, OUTPUT); // initalize LED as an output
+   digitalWrite(led,LOW);
+   Serial.begin(9600); 
 }
 void loop ()
 {
@@ -60,6 +64,15 @@ void loop ()
          // Calculate the weighed average of heartbeat rate
          // according to the three last beats
          print_value = 60000. / (0.4 * first + 0.3 * second + 0.3 * third);
+         if (print_value >= 100.0) {
+           for (int i = 0; i <=5; i++) {
+            digitalWrite(led,HIGH);
+            delay(50);
+            digitalWrite(led,LOW);
+           } 
+         } else {
+            digitalWrite(led,HIGH); //HIGH is set to about 5V PIN8
+         }
          Serial.print(print_value);
          Serial.print('\n');
          third = second;
@@ -69,6 +82,8 @@ void loop ()
      else
      {
        // Ok, the curve is falling
+       // delay(500);
+       digitalWrite(led,LOW);  //LOW is set to about 5V PIN8
        rising = false;
        rise_count = 0;
      }

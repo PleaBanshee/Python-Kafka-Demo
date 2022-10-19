@@ -30,7 +30,7 @@ except Exception as e:
 # Define server with port
 bootstrap_servers = ['localhost:9092']
 # Define topic name from where the message will recieve
-topicName = 'script-topic'
+topicName = 'script-topic1'
 # Initialize consumer variable
 consumer = KafkaConsumer(topicName, group_id ='group0', bootstrap_servers =
    bootstrap_servers,auto_offset_reset='earliest')
@@ -61,14 +61,14 @@ def calcThresholds(date,pulse):
         sum_total += num
     avg = sum_total//len(pulse)
     threshold_list = []
-    if avg >= 200:
+    if avg >= 100:
         for item in threshold_check["Pulse_Val"]:
-            if item >= 200 and counter == 0:
+            if item >= 100 and counter == 0:
                 threshold_start = counter
                 threshold_list.append(threshold_check['Date'])
                 counter += 1
                 continue
-            if item >= 200:
+            if item >= 100:
                 threshold_list.append(threshold_check['Date'])
             counter += 1
         return threshold_check['Date'][threshold_start],threshold_check['Date'][len(threshold_list)-1]
