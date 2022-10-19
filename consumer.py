@@ -26,7 +26,7 @@ except Exception as e:
 # Define server with port
 bootstrap_servers = ['localhost:9092']
 # Define topic name from where the message will recieve
-topicName = 'kafka19'
+topicName = 'kafka20'
 # Initialize consumer variable
 consumer = KafkaConsumer(topicName, group_id ='group0', bootstrap_servers =
    bootstrap_servers)

@@ -10,7 +10,7 @@ ser = serial.Serial('COM3',9800)
 bootstrap_servers = ['localhost:9092']
 
 # Define topic name where the message will publish
-topicName = 'kafka19'
+topicName = 'kafka20'
 
 # Initialize producer variable
 producer = KafkaProducer(bootstrap_servers = bootstrap_servers)
