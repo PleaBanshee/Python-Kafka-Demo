@@ -11,7 +11,7 @@ data = []
 bootstrap_servers = ['localhost:9092']
 
 # Define topic name where the message will publish
-topicName = 'script-topic1'
+topicName = 'script-topic5'
 
 # Initialize producer variable
 producer = KafkaProducer(bootstrap_servers = bootstrap_servers,
@@ -29,7 +29,6 @@ for val in data:
         producer.send(topicName,val)
         print(f"Reading {val} to consumer...")
         producer.flush()
-        time.sleep(1)
     except KeyboardInterrupt:
         # Terminate the script
         print('Exiting Producer...')
