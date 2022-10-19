@@ -4,13 +4,13 @@ import serial
 import time
 from kafka import KafkaProducer
 
-ser = serial.Serial('COM3',9800,timeout=1)
+ser = serial.Serial('COM3',9800)
 
 # Define server with port
 bootstrap_servers = ['localhost:9092']
 
 # Define topic name where the message will publish
-topicName = 'testing-20'
+topicName = 'kafka16'
 
 # Initialize producer variable
 producer = KafkaProducer(bootstrap_servers = bootstrap_servers)
@@ -23,7 +23,7 @@ while True:
         producer.send(topicName,arduinoReads)
         print("Reading...")
         producer.flush()
-        time.sleep(1)
+        # time.sleep(1)
     except KeyboardInterrupt:
         # Terminate the script
         print('Exiting Producer...')

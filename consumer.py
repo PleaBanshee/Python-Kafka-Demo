@@ -20,7 +20,7 @@ pulse_val = []
 try:
    client = MongoClient('localhost',27017)
    db = client["test"]
-   col = db["pulse_rate"]
+   col = db["pulse_rates"]
    print("Connected successfully to MongoDB")
    powerBI = os.getenv('POWERBI_API')
 except Exception as e:  
@@ -29,23 +29,23 @@ except Exception as e:
 # Define server with port
 bootstrap_servers = ['localhost:9092']
 # Define topic name from where the message will recieve
-topicName = 'testing-20'
+topicName = 'kafka16'
 # Initialize consumer variable
 consumer = KafkaConsumer(topicName, group_id ='group0', bootstrap_servers =
    bootstrap_servers)
 
 def calcLargestFactor(x):
-    factors = []
-    i = 2
-    while i < x:
-        while x % i == 0:
-            x /= i
-            factors += [i]
-        i += 1
-    return factors
+   factors = []
+   for i in range(1, x + 1):
+       if x % i == 0:
+           factors.append(i)
+   return factors
     
 def get_large(x):
-    return calcLargestFactor(x)[-1]
+    if (x % 2 != 0):
+        return calcLargestFactor(x)[1]
+    else:
+        return calcLargestFactor(x)[-3]
 
 def calcThresholds(date,pulse):
     sum_total = 0
@@ -86,11 +86,12 @@ for msg in consumer:
 
    try:
       try:
-         now = datetime.strftime(datetime.utcnow(), "%Y-%m-%d %H:%M:%S")
+         now = datetime.now().replace(tzinfo=None).isoformat() + 'Z'
          if pulseRate == '' or pulseRate == None:
             pulseRate = '0.0'
          pulse_rec = {'date': now, 'pulseRate': float(pulseRate)}
          pulse_rec_id = col.insert_one(pulse_rec)
+
          try:
             pulse_stream = {'date': now, 'pulseRate': pulse_rec["pulseRate"]}
             response = requests.post(powerBI,data=json_util.dumps([pulse_stream]))
@@ -113,13 +114,16 @@ for msg in consumer:
       chunkz = [pulse_date[i:i + len(pulse_date)//largestFactor] for i in range(0, len(pulse_date), len(pulse_date)//largestFactor)]
       chunkz2 = [pulse_val[i:i + len(pulse_val)//largestFactor] for i in range(0, len(pulse_val), len(pulse_val)//largestFactor)]
       for i in range(0,len(chunkz)):
+         if time1 or time2 is None:
+            if time1 == None:
+                time1 = 0
+            if time2 == None:
+                time2 = 0
          time1 = calcThresholds(chunkz[i],chunkz2[i])[0]
          time2 = calcThresholds(chunkz[i],chunkz2[i])[1]
-         if time1 and time2 is None:
-            time1 = 0
-            time2 = 0
          print(f"Thresholds occured from {time1} to {time2}")
+      print('Exiting Consumer...')
       if time1 == 0 and time2 == 0:
            print("No thresholds occured")
-      print('Exiting Consumer...')
+      client.close()
       sys.exit()
